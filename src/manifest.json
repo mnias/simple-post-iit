@@ -1,0 +1,30 @@
+{
+    "manifest_version": 3,
+    "name": "Simple Post-it",
+    "version": "1.0",
+    "description": "Post-it notes for your browser.",
+    "permissions": [
+        "storage"
+    ],
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "contentScript.js"
+            ]
+        }
+    ],
+    "icons": {
+        "16": "images/simple-post-it.png",
+        "48": "images/simple-post-it.png",
+        "128": "images/simple-post-it.png"
+    }
+}
