@@ -1,7 +1,7 @@
 // 처음에 이 파일에서 직접 DOM 조작이나 이벤트 리스너를 처리함
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import '../styles/tailwind.css';
+import '../styles/global.css';
 
 const Popup = () => {
     const handleClick = () => {

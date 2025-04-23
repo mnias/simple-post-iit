@@ -1,10 +1,10 @@
-const path = require('path');
+import path from 'path';
+import webpack from 'webpack';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import CopyWebpackPlugin from 'copy-webpack-plugin';
 
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-
-module.exports = (env, argv) => {
+const config = (env: any, argv: { mode: string }): webpack.Configuration => {
     const isProduction = argv.mode === 'production';
 
     return {
@@ -45,7 +45,7 @@ module.exports = (env, argv) => {
             new CopyWebpackPlugin({
                 patterns: [
                     { from: 'src/manifest.json', to: 'manifest.json' },
-                    { from: 'images', to: 'images' },  // Copy any additional assets
+                    { from: 'images', to: 'images' },
                 ],
             }),
         ],
@@ -53,3 +53,5 @@ module.exports = (env, argv) => {
         devtool: isProduction ? false : 'inline-source-map',
     };
 };
+
+export default config;
