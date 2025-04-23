@@ -9,7 +9,7 @@ const config = (env: any, argv: { mode: string }): webpack.Configuration => {
 
     return {
         entry: {
-            popup: './src/popup/popup.tsx',
+            sidepanel: './src/sidepanel/sidepanel.tsx',
             background: './src/scripts/background.ts',
             contentScript: './src/scripts/contentScript.ts',
         },
@@ -38,9 +38,9 @@ const config = (env: any, argv: { mode: string }): webpack.Configuration => {
                 filename: '[name].css',
             }),
             new HtmlWebpackPlugin({
-                filename: 'popup.html',
-                template: 'src/popup/popup.html',
-                chunks: ['popup'],
+                filename: 'sidepanel.html',
+                template: 'src/sidepanel/sidepanel.html',
+                chunks: ['sidepanel'],
             }),
             new CopyWebpackPlugin({
                 patterns: [
