@@ -6,6 +6,27 @@ import '../styles/global.css';
 const Sidepanel = () => {
   const [text, setText] = React.useState('');
 
+  const startDrag = async (e: React.DragEvent<HTMLButtonElement>) => {
+    try {
+      // 현재 탭 찾기
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+
+      if (!tab.id) {
+        return;
+      }
+
+      // 메시지 전송
+      await chrome.tabs.sendMessage(tab.id, {
+        type: 'dragStart',
+      });
+    } catch (error) {
+      console.error('Drag start error:', error);
+    }
+  };
+
   return (
     <div className="flex flex-col p-4 gap-4">
       <textarea
@@ -14,11 +35,7 @@ const Sidepanel = () => {
         onChange={(e) => setText(e.target.value)}
       />
       <div className="flex flex-row gap-4">
-        <button
-          className="bg-blue-500 text-white p-2 rounded"
-          draggable
-          onDragStart={(e) => console.log('drag start')}
-        >
+        <button className="bg-blue-500 text-white p-2 rounded" draggable onDragStart={startDrag}>
           붙이기
         </button>
         <button className="bg-blue-500 text-white p-2 rounded" onClick={() => setText('')}>

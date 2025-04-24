@@ -5,10 +5,14 @@
     "description": "Post-it notes for your browser.",
     "permissions": [
         "storage",
-        "sidePanel"
+        "sidePanel",
+        "activeTab",
+        "scripting",
+        "tabs"
     ],
     "background": {
-        "service_worker": "background.js"
+        "service_worker": "background.js",
+        "type": "module"
     },
     "side_panel": {
         "default_path": "sidePanel.html",
