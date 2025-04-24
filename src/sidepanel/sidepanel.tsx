@@ -3,25 +3,20 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import '../styles/global.css';
 
-const Popup = () => {
-    const handleClick = () => {
-        alert('Button clicked!');
-    };
+const Sidepanel = () => {
+  const [text, setText] = React.useState('');
 
-    return (
-        <div className="flex flex-col items-center bg-gray-100 p-4">
-            <h1 className="text-xl font-bold mb-4">Simple Post-it!</h1>
-            <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                onClick={handleClick}
-            >
-                Click me!!
-            </button>
-        </div>
-    );
+  return (
+    <div className="flex flex-col p-4">
+      <textarea
+        className="bg-amber-200 p-8 rounded-lg focus:outline-none h-200 text-[16px] resize-none"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+      />
+    </div>
+  );
 };
 
-
-const container = document.getElementById('root')
-const root = createRoot(container as HTMLDivElement)
-root.render(<Popup />);
+const container = document.getElementById('root');
+const root = createRoot(container as HTMLDivElement);
+root.render(<Sidepanel />);
