@@ -7,12 +7,18 @@ const Sidepanel = () => {
   const [text, setText] = React.useState('');
 
   return (
-    <div className="flex flex-col p-4">
+    <div className="flex flex-col p-4 gap-4">
       <textarea
         className="bg-amber-200 p-8 rounded-lg focus:outline-none h-200 text-[16px] resize-none"
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
+      <div className="flex flex-row gap-4">
+        <button className="bg-blue-500 text-white p-2 rounded">붙이기</button>
+        <button className="bg-blue-500 text-white p-2 rounded" onClick={() => setText('')}>
+          지우기
+        </button>
+      </div>
     </div>
   );
 };
