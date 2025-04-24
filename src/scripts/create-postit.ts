@@ -1,0 +1,53 @@
+export const createPostIt = (x: number, y: number) => {
+  const container = document.createElement('div');
+  container.style.cssText = `
+      position: absolute;
+      left: ${x}px;
+      top: ${y}px;
+      display: flex;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      z-index: 9999;
+    `;
+
+  // 포스트잇 생성
+  const postIt = document.createElement('div');
+  postIt.className = 'post-it';
+  postIt.style.cssText = `
+      width: 40px;
+      height: 16px;
+      background-color: #fef08a;
+      border-radius: 4px;
+      cursor: move;
+    `;
+
+  // 닫기 버튼 생성
+  const closeButton = document.createElement('button');
+  closeButton.style.cssText = `
+      width: 16px;
+      height: 16px;
+      background-color: #ef4444;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    `;
+
+  // 호버 효과
+  closeButton.addEventListener('mouseover', () => {
+    closeButton.style.opacity = '1';
+  });
+  closeButton.addEventListener('mouseout', () => {
+    closeButton.style.opacity = '0.8';
+  });
+
+  // 클릭 시 전체 컨테이너 제거
+  closeButton.addEventListener('click', () => {
+    container.remove();
+  });
+
+  // 요소들을 컨테이너에 추가
+  container.appendChild(postIt);
+  container.appendChild(closeButton);
+  document.body.appendChild(container);
+};
