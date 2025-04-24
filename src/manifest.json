@@ -5,7 +5,10 @@
     "description": "Post-it notes for your browser.",
     "permissions": [
         "storage",
-        "sidePanel"
+        "sidePanel",
+        "activeTab",
+        "scripting",
+        "tabs"
     ],
     "background": {
         "service_worker": "background.js"
