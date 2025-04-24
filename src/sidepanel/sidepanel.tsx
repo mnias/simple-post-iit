@@ -14,7 +14,13 @@ const Sidepanel = () => {
         onChange={(e) => setText(e.target.value)}
       />
       <div className="flex flex-row gap-4">
-        <button className="bg-blue-500 text-white p-2 rounded">붙이기</button>
+        <button
+          className="bg-blue-500 text-white p-2 rounded"
+          draggable
+          onDragStart={(e) => console.log('drag start')}
+        >
+          붙이기
+        </button>
         <button className="bg-blue-500 text-white p-2 rounded" onClick={() => setText('')}>
           지우기
         </button>
