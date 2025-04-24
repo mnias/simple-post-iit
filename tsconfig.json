@@ -18,9 +18,9 @@
         "moduleResolution": "nodenext",
         // 전역적으로 사용할 타입 정의
         "types": [
-            "chrome-types",    // 크롬 익스텐션 API 타입
-            "node",           // Node.js 타입
-            "tailwindcss"     // Tailwind CSS 타입
+            "chrome-types", // 크롬 익스텐션 API 타입
+            "node", // Node.js 타입
+            "tailwindcss" // Tailwind CSS 타입
         ],
         // JavaScript 파일 허용
         "allowJs": true,
@@ -31,9 +31,9 @@
     },
     // 컴파일에 포함될 파일 패턴
     "include": [
-        "src/**/*",              // 소스 코드
-        "webpack.config.ts",     // 웹팩 설정
-        "postcss.config.ts",     // PostCSS 설정
-        "tailwind.config.ts"     // Tailwind 설정
+        "src/**/*", // 소스 코드
+        "webpack.config.ts", // 웹팩 설정
+        "postcss.config.ts", // PostCSS 설정
+        "tailwind.config.ts" // Tailwind 설정
     ],
 }
