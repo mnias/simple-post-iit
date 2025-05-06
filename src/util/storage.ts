@@ -1,5 +1,5 @@
 import { PostItData } from '../types/post-it';
-import { PostItByHost } from '../types/post-it-by-host';
+import { StorageData } from '../types/storage-data';
 import { parseUrl } from './parseUrl';
 
 export const savePostIt = async (

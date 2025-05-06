@@ -32,7 +32,7 @@ const Sidepanel = () => {
     const messageListener = async (message: any, sender: any, sendResponse: any) => {
       if (message.type === 'savePostIt') {
         const postItData = {
-          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          id: message.postItData.id,
           text,
           position: message.postItData.position,
           createdAt: Date.now(),

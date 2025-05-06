@@ -1,8 +1,12 @@
 import { PostItData } from '../types/post-it';
 import { PostItPage } from '../types/post-it-page';
+import { generatePostItId } from '../util/generatePostItId';
 
-export const createPostIt = (x: number, y: number) => {
+export const createPostIt = (x: number, y: number, id?: number) => {
   const container = document.createElement('div');
+  const postItId = id || generatePostItId();
+
+  container.dataset.postItId = `${postItId}`;
   container.style.cssText = `
       position: absolute;
       left: ${x}px;
@@ -54,18 +58,19 @@ export const createPostIt = (x: number, y: number) => {
   container.appendChild(closeButton);
   document.body.appendChild(container);
 
-  savePostIt(x, y);
+  if (!id) {
+    savePostIt(`${postItId}`, x, y);
+  }
 };
 
-const savePostIt = (x: number, y: number) => {
+const savePostIt = (id: string, x: number, y: number) => {
   chrome.runtime.sendMessage({
     type: 'savePostIt',
     postItData: {
+      id,
       url: document.location.href,
-      position: {
-        x,
-        y,
-      },
+      position: { x, y },
+      createdAt: Date.now(),
     },
   });
 };
