@@ -4,11 +4,13 @@ import '../styles/global.css';
 import { getPostIts, savePostIt, deletePostIt, updatePostIt } from '../util/storage';
 import { PostItData } from '../types/post-it';
 import PostItList from './post-it-list';
+import DomainPostItList from './domain-post-it-list';
 
 const Sidepanel = () => {
   const [text, setText] = React.useState('');
   const [selectedPostIt, setSelectedPostIt] = React.useState<PostItData | null>(null);
   const [savedPostIts, setSavedPostIts] = React.useState<PostItData[]>([]);
+  const [allPostIts, setAllPostIts] = React.useState<Record<string, PostItData[]>>({});
 
   const loadCurrentTabPostIts = async () => {
     try {
@@ -27,6 +29,21 @@ const Sidepanel = () => {
       console.error('Error loading post-its:', error);
     }
   };
+
+  // 모든 포스트잇 로드
+  const loadAllPostIts = async () => {
+    try {
+      const result = await chrome.storage.local.get(null);
+      setAllPostIts(result);
+    } catch (error) {
+      console.error('Error loading all post-its:', error);
+    }
+  };
+
+  // 초기 로드
+  React.useEffect(() => {
+    loadAllPostIts();
+  }, []);
 
   // URL 변경 감지 및 포스트잇 로드
   React.useEffect(() => {
@@ -143,6 +160,7 @@ const Sidepanel = () => {
 
       // 목록 갱신
       await loadCurrentTabPostIts();
+      await loadAllPostIts(); // 전체 목록 갱신
     } catch (error) {
       console.error('Delete error:', error);
     }
@@ -181,8 +199,33 @@ const Sidepanel = () => {
       setSelectedPostIt(null);
       setText('');
       await loadCurrentTabPostIts();
+      await loadAllPostIts(); // 전체 목록 갱신
     } catch (error) {
       console.error('Update error:', error);
+    }
+  };
+
+  // 포스트잇 클릭 시 해당 URL로 이동
+  const handlePostItClick = async (hostname: string, path: string) => {
+    try {
+      // URL 생성
+      const url = `${hostname}${path}`;
+
+      // chrome-extension:// 프로토콜이 포함된 경우 제거
+      const cleanUrl = url.includes('chrome-extension://')
+        ? url.split('chrome-extension://')[1].split('/', 2)[1]
+        : url;
+
+      // 프로토콜이 없는 경우 https:// 추가
+      const finalUrl = cleanUrl.startsWith('http') ? cleanUrl : `https://${cleanUrl}`;
+
+      // 현재 탭의 URL 변경
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab?.id) {
+        await chrome.tabs.update(tab.id, { url: finalUrl });
+      }
+    } catch (error) {
+      console.error('Navigation error:', error);
     }
   };
 
@@ -225,6 +268,9 @@ const Sidepanel = () => {
         </div>
       </div>
       <PostItList postIts={savedPostIts} onDelete={handleDelete} onSelect={handlePostItSelect} />
+      <div className="border-t border-gray-200 mt-4 pt-4">
+        <DomainPostItList allPostIts={allPostIts} onPostItClick={handlePostItClick} />
+      </div>
     </div>
   );
 };
