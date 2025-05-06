@@ -4,23 +4,47 @@ import { getPostIts } from '../util/storage';
 import { createPostIt } from './create-postit';
 
 let isDraggable = false;
-let isInitialized = false; // 초기화 여부 체크
+let isInitialized = false;
+let isRestoringPostIts = false; // 복원 중인지 확인하는 플래그 추가
 
-console.log('Content script loaded');
+const clearPostIts = () => {
+  // 기존 포스트잇 제거
+  const existingPostIts = document.querySelectorAll('[data-post-it-id]');
+  existingPostIts.forEach((postIt) => postIt.remove());
+};
 const restorePostIts = async () => {
+  if (isRestoringPostIts) return; // 이미 복원 중이면 중복 실행 방지
+  
   try {
+    isRestoringPostIts = true;
     const currentUrl = window.location.href;
     const savedPostIts = await getPostIts(currentUrl);
 
-    console.log('Restoring post-its:', savedPostIts);
+    console.log('Restoring post-its for:', currentUrl);
+    console.log('Found post-its:', savedPostIts);
 
+    // 기존 포스트잇 제거 후 새로운 포스트잇 생성
+    clearPostIts();
     savedPostIts.forEach((postIt: PostItData) => {
-      createPostIt(postIt.position.x, postIt.position.y);
+      createPostIt(postIt.position.x, postIt.position.y, postIt.id, true); // isRestoring 플래그 추가
     });
   } catch (error) {
     console.error('Error restoring post-its:', error);
+  } finally {
+    isRestoringPostIts = false;
   }
 };
+
+// URL 변경 감지
+let lastUrl = window.location.href;
+const urlObserver = new MutationObserver(() => {
+  const currentUrl = window.location.href;
+  if (currentUrl !== lastUrl) {
+    lastUrl = currentUrl;
+    console.log('URL changed, updating post-its');
+    restorePostIts();
+  }
+});
 
 const initializeListeners = () => {
   if (isInitialized) return; // 이미 초기화되었다면 중복 실행 방지
@@ -53,6 +77,20 @@ const initializeListeners = () => {
   isInitialized = true; // 초기화 완료 표시
 };
 
-// 초기화 및 복원 실행
-initializeListeners();
-restorePostIts();
+// 초기화 및 이벤트 리스너 설정
+const initialize = () => {
+  if (isInitialized) return;
+
+  initializeListeners();
+  restorePostIts();
+
+  // URL 변경 감지 시작
+  urlObserver.observe(document, { subtree: true, childList: true });
+
+  // 히스토리 API 이벤트 처리
+  window.addEventListener('popstate', restorePostIts);
+
+  isInitialized = true;
+};
+
+initialize();

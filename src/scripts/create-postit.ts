@@ -2,11 +2,11 @@ import { PostItData } from '../types/post-it';
 import { PostItPage } from '../types/post-it-page';
 import { generatePostItId } from '../util/generatePostItId';
 
-export const createPostIt = (x: number, y: number, id?: number) => {
+export const createPostIt = (x: number, y: number, id?: string, isRestoring: boolean = false) => {
   const container = document.createElement('div');
-  const postItId = id || generatePostItId();
+  const postItId = id || `postit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-  container.dataset.postItId = `${postItId}`;
+  container.dataset.postItId = postItId;
   container.style.cssText = `
       position: absolute;
       left: ${x}px;
@@ -58,7 +58,8 @@ export const createPostIt = (x: number, y: number, id?: number) => {
   container.appendChild(closeButton);
   document.body.appendChild(container);
 
-  if (!id) {
+  // 복원 중이 아닐 때만 저장 실행
+  if (!isRestoring && !id) {
     savePostIt(`${postItId}`, x, y);
   }
 };

@@ -69,15 +69,50 @@ const Sidepanel = () => {
     return () => chrome.runtime.onMessage.removeListener(messageListener);
   }, [text]);
 
-  // 컴포넌트 마운트 및 탭 변경 시 포스트잇 로드
+  // URL 변경 감지 및 포스트잇 로드
   React.useEffect(() => {
-    loadCurrentTabPostIts();
+    const getCurrentTab = async () => {
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+
+      if (tab?.url) {
+        const postIts = await getPostIts(tab.url);
+        setSavedPostIts(postIts);
+      } else {
+        // 유효한 URL이 없으면 포스트잇 목록 초기화
+        setSavedPostIts([]);
+      }
+    };
+
+    // 초기 로드
+    getCurrentTab();
 
     // 탭 변경 감지
-    chrome.tabs.onActivated.addListener(loadCurrentTabPostIts);
+    const handleTabChange = async (activeInfo: chrome.tabs.TabActiveInfo) => {
+      const tab = await chrome.tabs.get(activeInfo.tabId);
+      if (tab?.url) {
+        const postIts = await getPostIts(tab.url);
+        setSavedPostIts(postIts);
+      } else {
+        setSavedPostIts([]);
+      }
+    };
+
+    // URL 변경 감지
+    const handleURLChange = (tabId: number, changeInfo: chrome.tabs.TabChangeInfo) => {
+      if (changeInfo.url) {
+        getPostIts(changeInfo.url).then(setSavedPostIts);
+      }
+    };
+
+    chrome.tabs.onActivated.addListener(handleTabChange);
+    chrome.tabs.onUpdated.addListener(handleURLChange);
 
     return () => {
-      chrome.tabs.onActivated.removeListener(loadCurrentTabPostIts);
+      chrome.tabs.onActivated.removeListener(handleTabChange);
+      chrome.tabs.onUpdated.removeListener(handleURLChange);
     };
   }, []);
 
