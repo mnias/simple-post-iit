@@ -1,6 +1,11 @@
 @import 'tailwindcss';
 
-@theme {
+:root {
+  /* 기본 사이즈 변수 정의 */
+  --post-it-width: 20px;
+  --post-it-height: 16px;
+  --close-button-size: 16px;
+  --list-close-button-size: 24px;
   --spacing: 1px;
 }
 
@@ -8,5 +13,52 @@
   button:not([disabled]),
   [role='button']:not([disabled]) {
     cursor: pointer;
+  }
+}
+
+@layer components {
+  /* 포스트잇 관련 스타일 */
+  .post-it-container {
+    position: absolute;
+    display: flex;
+    gap: 4px;
+    z-index: 9999;
+  }
+
+  .post-it {
+    width: var(--post-it-width);
+    height: var(--post-it-height);
+    background-color: #fef08a;
+    border-radius: 4px;
+    cursor: move;
+  }
+
+  .post-it-close-button {
+    width: var(--close-button-size);
+    height: var(--close-button-size);
+    background-color: #ef4444;
+    border: none;
+    border-radius: 4px;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+  }
+
+  /* 사이드패널 리스트의 삭제 버튼 */
+  .list-close-button {
+    width: var(--list-close-button-size);
+    height: var(--list-close-button-size);
+    background-color: #ef4444;
+    border: none;
+    border-radius: 9999px;
+    color: white;
+    font-size: 1.125rem;
+    font-weight: 500;
+    opacity: 0.8;
+    transition: all 0.2s;
+  }
+
+  .list-close-button:hover {
+    opacity: 1;
+    background-color: #dc2626;
   }
 }

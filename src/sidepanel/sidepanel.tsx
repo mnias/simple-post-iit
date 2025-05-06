@@ -2,7 +2,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import '../styles/global.css';
-import { getPostIts, savePostIt } from '../util/storage';
+import { getPostIts, savePostIt, deletePostIt } from '../util/storage';
 import { PostItData } from '../types/post-it';
 import PostItList from './post-it-list';
 
@@ -20,11 +20,64 @@ const Sidepanel = () => {
       if (tab?.url) {
         const postIts = await getPostIts(tab.url);
         setSavedPostIts(postIts);
+      } else {
+        setSavedPostIts([]);
       }
     } catch (error) {
       console.error('Error loading post-its:', error);
     }
   };
+
+  // URL 변경 감지 및 포스트잇 로드
+  React.useEffect(() => {
+    // 초기 로드
+    loadCurrentTabPostIts();
+
+    // 탭 변경 감지
+    const handleTabChange = async (activeInfo: chrome.tabs.TabActiveInfo) => {
+      await loadCurrentTabPostIts();
+    };
+
+    // URL 변경 감지
+    const handleURLChange = (tabId: number, changeInfo: chrome.tabs.TabChangeInfo) => {
+      if (changeInfo.url) {
+        loadCurrentTabPostIts();
+      }
+    };
+
+    chrome.tabs.onActivated.addListener(handleTabChange);
+    chrome.tabs.onUpdated.addListener(handleURLChange);
+
+    return () => {
+      chrome.tabs.onActivated.removeListener(handleTabChange);
+      chrome.tabs.onUpdated.removeListener(handleURLChange);
+    };
+  }, []);
+
+  // 메시지 리스너
+  React.useEffect(() => {
+    const messageListener = async (message: any, sender: any, sendResponse: any) => {
+      if (message.type === 'savePostIt') {
+        const postItData = {
+          id: message.postItData.id,
+          text,
+          position: message.postItData.position,
+          createdAt: Date.now(),
+        };
+
+        await savePostIt(message.postItData.url, postItData);
+        await loadCurrentTabPostIts(); // 저장 후 목록 갱신
+      }
+      
+      if (message.type === 'deletePostIt') {
+        await deletePostIt(message.postItData.url, message.postItData.id);
+        await loadCurrentTabPostIts(); // 삭제 후 목록 갱신
+      }
+    };
+
+    chrome.runtime.onMessage.addListener(messageListener);
+    return () => chrome.runtime.onMessage.removeListener(messageListener);
+  }, [text]);
 
   const startDrag = async (e: React.DragEvent<HTMLButtonElement>) => {
     try {
@@ -47,74 +100,35 @@ const Sidepanel = () => {
     }
   };
 
-  React.useEffect(() => {
-    const messageListener = async (message: any, sender: any, sendResponse: any) => {
-      if (message.type === 'savePostIt') {
-        const postItData = {
-          id: message.postItData.id,
-          text,
-          position: message.postItData.position,
-          createdAt: Date.now(),
-        };
-
-        await savePostIt(message.postItData.url, postItData);
-        console.log('Post-it saved:', postItData);
-
-        // 포스트잇 저장 후 목록 갱신
-        await loadCurrentTabPostIts();
-      }
-    };
-
-    chrome.runtime.onMessage.addListener(messageListener);
-    return () => chrome.runtime.onMessage.removeListener(messageListener);
-  }, [text]);
-
-  // URL 변경 감지 및 포스트잇 로드
-  React.useEffect(() => {
-    const getCurrentTab = async () => {
+  const handleDelete = async (postIt: PostItData) => {
+    try {
       const [tab] = await chrome.tabs.query({
         active: true,
         currentWindow: true,
       });
 
-      if (tab?.url) {
-        const postIts = await getPostIts(tab.url);
-        setSavedPostIts(postIts);
-      } else {
-        // 유효한 URL이 없으면 포스트잇 목록 초기화
-        setSavedPostIts([]);
+      if (!tab?.url) return;
+
+      // storage에서 삭제
+      await deletePostIt(tab.url, postIt.id);
+      
+      // DOM에서 삭제하도록 메시지 전송
+      if (tab.id) {
+        chrome.tabs.sendMessage(tab.id, {
+          type: 'deletePostIt',
+          postItData: {
+            id: postIt.id,
+            url: tab.url
+          }
+        });
       }
-    };
 
-    // 초기 로드
-    getCurrentTab();
-
-    // 탭 변경 감지
-    const handleTabChange = async (activeInfo: chrome.tabs.TabActiveInfo) => {
-      const tab = await chrome.tabs.get(activeInfo.tabId);
-      if (tab?.url) {
-        const postIts = await getPostIts(tab.url);
-        setSavedPostIts(postIts);
-      } else {
-        setSavedPostIts([]);
-      }
-    };
-
-    // URL 변경 감지
-    const handleURLChange = (tabId: number, changeInfo: chrome.tabs.TabChangeInfo) => {
-      if (changeInfo.url) {
-        getPostIts(changeInfo.url).then(setSavedPostIts);
-      }
-    };
-
-    chrome.tabs.onActivated.addListener(handleTabChange);
-    chrome.tabs.onUpdated.addListener(handleURLChange);
-
-    return () => {
-      chrome.tabs.onActivated.removeListener(handleTabChange);
-      chrome.tabs.onUpdated.removeListener(handleURLChange);
-    };
-  }, []);
+      // 목록 갱신
+      await loadCurrentTabPostIts();
+    } catch (error) {
+      console.error('Delete error:', error);
+    }
+  };
 
   return (
     <div className="flex flex-col p-4 gap-4">
@@ -128,7 +142,10 @@ const Sidepanel = () => {
           붙이기
         </button>
       </div>
-      <PostItList postIts={savedPostIts} />
+      <PostItList 
+        postIts={savedPostIts} 
+        onDelete={handleDelete}
+      />
     </div>
   );
 };

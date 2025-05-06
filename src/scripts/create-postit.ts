@@ -7,6 +7,7 @@ export const createPostIt = (x: number, y: number, id?: string, isRestoring: boo
   const postItId = id || `postit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
   container.dataset.postItId = postItId;
+  container.className = 'post-it-container';
   container.style.cssText = `
       position: absolute;
       left: ${x}px;
@@ -29,6 +30,7 @@ export const createPostIt = (x: number, y: number, id?: string, isRestoring: boo
 
   // 닫기 버튼 생성
   const closeButton = document.createElement('button');
+  closeButton.className = 'post-it-close-button';
   closeButton.style.cssText = `
       width: 16px;
       height: 16px;
@@ -48,9 +50,19 @@ export const createPostIt = (x: number, y: number, id?: string, isRestoring: boo
     closeButton.style.opacity = '0.8';
   });
 
-  // 클릭 시 전체 컨테이너 제거
+  // 클릭 시 전체 컨테이너 제거 및 저장소에서 삭제
   closeButton.addEventListener('click', () => {
+    // DOM에서 제거
     container.remove();
+    
+    // 저장소에서 삭제 및 사이드패널 갱신을 위한 메시지 전송
+    chrome.runtime.sendMessage({
+      type: 'deletePostIt',
+      postItData: {
+        id: postItId,
+        url: document.location.href
+      }
+    });
   });
 
   // 요소들을 컨테이너에 추가

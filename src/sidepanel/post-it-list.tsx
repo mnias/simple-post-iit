@@ -3,19 +3,31 @@ import { PostItData } from '../types/post-it';
 
 interface PostItListProps {
   postIts: PostItData[];
+  onDelete: (postIt: PostItData) => void;
 }
 
-const PostItList: React.FC<PostItListProps> = ({ postIts }) => {
+const PostItList: React.FC<PostItListProps> = ({ postIts, onDelete }) => {
   return (
     <div className="mt-4">
       <h2 className="text-lg font-semibold mb-2">저장된 메모</h2>
       <div className="space-y-2">
         {postIts.map((postIt) => (
-          <div key={postIt.id} className="bg-amber-100 p-2 rounded shadow-sm">
-            <div className="text-sm text-gray-600">
-              {new Date(postIt.createdAt).toLocaleString()}
+          <div
+            key={postIt.id}
+            className="bg-amber-100 p-2 rounded shadow-sm flex justify-between items-center"
+          >
+            <div>
+              <div className="text-sm text-gray-600">
+                {new Date(postIt.createdAt).toLocaleString()}
+              </div>
+              <div className="mt-1">{postIt.text}</div>
             </div>
-            <div className="mt-1">{postIt.text}</div>
+            <button
+              onClick={() => onDelete(postIt)}
+              className="w-40 h-40 bg-red-500 flex items-center justify-center text-white opacity-80 hover:opacity-100"
+            >
+              ×
+            </button>
           </div>
         ))}
       </div>
