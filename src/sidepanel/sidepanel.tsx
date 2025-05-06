@@ -83,12 +83,18 @@ const Sidepanel = () => {
         };
 
         await savePostIt(message.postItData.url, postItData);
-        await loadCurrentTabPostIts(); // 저장 후 목록 갱신
+        await Promise.all([
+          loadCurrentTabPostIts(),
+          loadAllPostIts() // 전체 목록도 갱신
+        ]);
       }
 
       if (message.type === 'deletePostIt') {
         await deletePostIt(message.postItData.url, message.postItData.id);
-        await loadCurrentTabPostIts(); // 삭제 후 목록 갱신
+        await Promise.all([
+          loadCurrentTabPostIts(),
+          loadAllPostIts() // 전체 목록도 갱신
+        ]);
       }
 
       if (message.type === 'selectPostIt') {
@@ -230,10 +236,11 @@ const Sidepanel = () => {
   };
 
   return (
-    <div className="flex flex-col p-4 gap-4">
-      <div className="flex flex-col gap-2">
+    <div className="flex flex-col h-screen p-4 gap-4">
+      {/* 포스트잇 작성 영역 - 전체 높이의 30% */}
+      <div className="flex flex-col gap-2 h-[30%]">
         <textarea
-          className="bg-amber-200 p-8 rounded-lg focus:outline-none h-200 text-[16px] resize-none"
+          className="flex-1 bg-amber-200 p-4 rounded-lg focus:outline-none text-[16px] resize-none"
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
@@ -267,9 +274,28 @@ const Sidepanel = () => {
           )}
         </div>
       </div>
-      <PostItList postIts={savedPostIts} onDelete={handleDelete} onSelect={handlePostItSelect} />
-      <div className="border-t border-gray-200 mt-4 pt-4">
-        <DomainPostItList allPostIts={allPostIts} onPostItClick={handlePostItClick} />
+
+      {/* 리스트 영역 - 전체 높이의 70%, 세로로 분할 */}
+      <div className="flex-1 flex flex-col gap-4 h-[70%] min-h-0">
+        {/* 현재 페이지 포스트잇 목록 - 상단 50% */}
+        <div className="h-1/2 overflow-auto">
+          <PostItList 
+            postIts={savedPostIts} 
+            onDelete={handleDelete} 
+            onSelect={handlePostItSelect} 
+          />
+        </div>
+
+        {/* 구분선 */}
+        <hr className="border-t border-gray-200" />
+
+        {/* 전체 포스트잇 목록 - 하단 50% */}
+        <div className="h-1/2 overflow-auto">
+          <DomainPostItList 
+            allPostIts={allPostIts} 
+            onPostItClick={handlePostItClick} 
+          />
+        </div>
       </div>
     </div>
   );
