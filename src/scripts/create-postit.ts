@@ -1,3 +1,6 @@
+import { PostItData } from '../types/post-it';
+import { PostItPage } from '../types/post-it-page';
+
 export const createPostIt = (x: number, y: number) => {
   const container = document.createElement('div');
   container.style.cssText = `
@@ -50,4 +53,25 @@ export const createPostIt = (x: number, y: number) => {
   container.appendChild(postIt);
   container.appendChild(closeButton);
   document.body.appendChild(container);
+
+  savePostIt(x, y);
+};
+
+const savePostIt = (x: number, y: number) => {
+  chrome.runtime.sendMessage({
+    type: 'savePostIt',
+    postItData: {
+      url: document.location.href,
+      position: {
+        x,
+        y,
+      },
+    },
+  });
+};
+
+const removePostIt = (keys: string | string[]) => {
+  chrome.storage.local.remove(keys, () => {
+    console.log('Post-it removed:', keys);
+  });
 };

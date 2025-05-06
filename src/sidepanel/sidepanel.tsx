@@ -2,6 +2,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import '../styles/global.css';
+import { savePostIt } from '../util/storage';
 
 const Sidepanel = () => {
   const [text, setText] = React.useState('');
@@ -26,6 +27,25 @@ const Sidepanel = () => {
       console.error('Drag start error:', error);
     }
   };
+
+  React.useEffect(() => {
+    const messageListener = async (message: any, sender: any, sendResponse: any) => {
+      if (message.type === 'savePostIt') {
+        const postItData = {
+          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          text,
+          position: message.postItData.position,
+          createdAt: Date.now(),
+        };
+
+        await savePostIt(message.postItData.url, postItData);
+        console.log('Post-it saved:', postItData);
+      }
+    };
+
+    chrome.runtime.onMessage.addListener(messageListener);
+    return () => chrome.runtime.onMessage.removeListener(messageListener);
+  }, [text]);
 
   return (
     <div className="flex flex-col p-4 gap-4">
