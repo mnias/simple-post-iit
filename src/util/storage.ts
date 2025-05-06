@@ -50,3 +50,17 @@ export const deletePostIt = async (url: string, postItId: string) => {
 
   await chrome.storage.local.set({ [hostname]: hostData });
 };
+
+export const updatePostIt = async (url: string, updatedPostIt: PostItData) => {
+  const { hostname, path } = parseUrl(url);
+  
+  const result = await chrome.storage.local.get(hostname);
+  const hostData = result[hostname] || {};
+  const pathPostIts = hostData[path] || [];
+
+  hostData[path] = pathPostIts.map((postIt: PostItData) => 
+    postIt.id === updatedPostIt.id ? updatedPostIt : postIt
+  );
+
+  await chrome.storage.local.set({ [hostname]: hostData });
+};

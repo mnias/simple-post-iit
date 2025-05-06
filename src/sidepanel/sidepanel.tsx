@@ -1,13 +1,13 @@
-// 처음에 이 파일에서 직접 DOM 조작이나 이벤트 리스너를 처리함
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import '../styles/global.css';
-import { getPostIts, savePostIt, deletePostIt } from '../util/storage';
+import { getPostIts, savePostIt, deletePostIt, updatePostIt } from '../util/storage';
 import { PostItData } from '../types/post-it';
 import PostItList from './post-it-list';
 
 const Sidepanel = () => {
   const [text, setText] = React.useState('');
+  const [selectedPostIt, setSelectedPostIt] = React.useState<PostItData | null>(null);
   const [savedPostIts, setSavedPostIts] = React.useState<PostItData[]>([]);
 
   const loadCurrentTabPostIts = async () => {
@@ -130,21 +130,86 @@ const Sidepanel = () => {
     }
   };
 
+  const handlePostItSelect = (postIt: PostItData) => {
+    setSelectedPostIt(postIt);
+    setText(postIt.text);
+  };
+
+  const handleUpdate = async () => {
+    if (!selectedPostIt) return;
+
+    try {
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+
+      if (!tab?.id || !tab.url) return;
+
+      // Update in storage
+      const updatedPostIt = {
+        ...selectedPostIt,
+        text,
+      };
+      await updatePostIt(tab.url, updatedPostIt);
+
+      // Send message to update DOM
+      chrome.tabs.sendMessage(tab.id, {
+        type: 'updatePostIt',
+        postItData: updatedPostIt,
+      });
+
+      // Reset selection and refresh list
+      setSelectedPostIt(null);
+      setText('');
+      await loadCurrentTabPostIts();
+    } catch (error) {
+      console.error('Update error:', error);
+    }
+  };
+
   return (
     <div className="flex flex-col p-4 gap-4">
-      <textarea
-        className="bg-amber-200 p-8 rounded-lg focus:outline-none h-200 text-[16px] resize-none"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-      />
-      <div className="flex flex-row gap-4">
-        <button className="bg-blue-500 text-white p-2 rounded" draggable onDragStart={startDrag}>
-          붙이기
-        </button>
+      <div className="flex flex-col gap-2">
+        <textarea
+          className="bg-amber-200 p-8 rounded-lg focus:outline-none h-200 text-[16px] resize-none"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+        />
+        <div className="flex gap-2">
+          {selectedPostIt ? (
+            <>
+              <button
+                className="flex-1 bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-all"
+                onClick={handleUpdate}
+              >
+                업데이트
+              </button>
+              <button
+                className="bg-gray-500 text-white p-2 rounded hover:bg-gray-600 transition-all"
+                onClick={() => {
+                  setSelectedPostIt(null);
+                  setText('');
+                }}
+              >
+                취소
+              </button>
+            </>
+          ) : (
+            <button
+              className="flex-1 bg-blue-500 text-white p-2 rounded"
+              draggable
+              onDragStart={startDrag}
+            >
+              붙이기
+            </button>
+          )}
+        </div>
       </div>
       <PostItList 
         postIts={savedPostIts} 
         onDelete={handleDelete}
+        onSelect={handlePostItSelect}
       />
     </div>
   );

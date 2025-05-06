@@ -4,9 +4,10 @@ import { PostItData } from '../types/post-it';
 interface PostItListProps {
   postIts: PostItData[];
   onDelete: (postIt: PostItData) => void;
+  onSelect: (postIt: PostItData) => void;  // Add this prop
 }
 
-const PostItList: React.FC<PostItListProps> = ({ postIts, onDelete }) => {
+const PostItList: React.FC<PostItListProps> = ({ postIts, onDelete, onSelect }) => {
   const handleDelete = async (postIt: PostItData) => {
     try {
       const [tab] = await chrome.tabs.query({
@@ -36,7 +37,8 @@ const PostItList: React.FC<PostItListProps> = ({ postIts, onDelete }) => {
         {postIts.map((postIt) => (
           <div
             key={postIt.id}
-            className="bg-amber-100 p-2 rounded shadow-sm flex justify-between items-center"
+            className="bg-amber-100 p-2 rounded shadow-sm flex justify-between items-center cursor-pointer hover:bg-amber-200 transition-all"
+            onClick={() => onSelect(postIt)}
           >
             <div>
               <div className="text-sm text-gray-600">
