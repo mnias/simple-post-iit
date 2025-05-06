@@ -65,6 +65,20 @@ export const createPostIt = (x: number, y: number, id?: string, isRestoring: boo
     });
   });
 
+  // 포스트잇 클릭 이벤트 추가
+  container.addEventListener('click', (event) => {
+    // 클릭 이벤트가 닫기 버튼에서 발생한 경우 무시
+    if (event.target === closeButton) return;
+
+    chrome.runtime.sendMessage({
+      type: 'selectPostIt',
+      postItData: {
+        id: postItId,
+        url: document.location.href
+      }
+    });
+  });
+
   // 요소들을 컨테이너에 추가
   container.appendChild(postIt);
   container.appendChild(closeButton);

@@ -68,10 +68,28 @@ const Sidepanel = () => {
         await savePostIt(message.postItData.url, postItData);
         await loadCurrentTabPostIts(); // 저장 후 목록 갱신
       }
-      
+
       if (message.type === 'deletePostIt') {
         await deletePostIt(message.postItData.url, message.postItData.id);
         await loadCurrentTabPostIts(); // 삭제 후 목록 갱신
+      }
+
+      if (message.type === 'selectPostIt') {
+        // 현재 URL의 포스트잇 데이터 가져오기
+        const [tab] = await chrome.tabs.query({
+          active: true,
+          currentWindow: true,
+        });
+
+        if (tab?.url) {
+          const postIts = await getPostIts(tab.url);
+          const selectedPostIt = postIts.find((p: PostItData) => p.id === message.postItData.id);
+
+          if (selectedPostIt) {
+            setSelectedPostIt(selectedPostIt);
+            setText(selectedPostIt.text);
+          }
+        }
       }
     };
 
@@ -111,15 +129,15 @@ const Sidepanel = () => {
 
       // storage에서 삭제
       await deletePostIt(tab.url, postIt.id);
-      
+
       // DOM에서 삭제하도록 메시지 전송
       if (tab.id) {
         chrome.tabs.sendMessage(tab.id, {
           type: 'deletePostIt',
           postItData: {
             id: postIt.id,
-            url: tab.url
-          }
+            url: tab.url,
+          },
         });
       }
 
@@ -206,11 +224,7 @@ const Sidepanel = () => {
           )}
         </div>
       </div>
-      <PostItList 
-        postIts={savedPostIts} 
-        onDelete={handleDelete}
-        onSelect={handlePostItSelect}
-      />
+      <PostItList postIts={savedPostIts} onDelete={handleDelete} onSelect={handlePostItSelect} />
     </div>
   );
 };
