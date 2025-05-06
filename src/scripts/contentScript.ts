@@ -72,6 +72,12 @@ const initializeListeners = () => {
       sendResponse();
       return true;
     }
+    if (message.type === 'removePostIt') {
+      const postIt = document.querySelector(`[data-post-it-id="${message.postItId}"]`);
+      if (postIt) {
+        postIt.remove();
+      }
+    }
   });
 
   isInitialized = true; // 초기화 완료 표시
