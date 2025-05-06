@@ -1,39 +1,39 @@
 {
-    "compilerOptions": {
-        // 컴파일된 JavaScript 버전 설정 (ES5)
-        "target": "es5",
-        // 모듈 시스템 설정 (Node.js의 ESM 지원)
-        "module": "NodeNext",
-        // 엄격한 타입 체크 활성화
-        "strict": true,
-        // CommonJS 모듈을 ES 모듈 방식으로 import 허용
-        "esModuleInterop": true,
-        // node_modules의 타입 체크 스킵으로 성능 향상
-        "skipLibCheck": true,
-        // 파일 이름의 대소문자 일관성 체크
-        "forceConsistentCasingInFileNames": true,
-        // React JSX 문법 지원
-        "jsx": "react",
-        // 모듈 해석 방식 설정 (Node.js의 ESM 방식)
-        "moduleResolution": "nodenext",
-        // 전역적으로 사용할 타입 정의
-        "types": [
-            "chrome-types",    // 크롬 익스텐션 API 타입
-            "node",           // Node.js 타입
-            "tailwindcss"     // Tailwind CSS 타입
-        ],
-        // JavaScript 파일 허용
-        "allowJs": true,
-        // JavaScript 파일 타입 체크 비활성화
-        "checkJs": false,
-        // 컴파일된 파일이 생성될 디렉토리
-        "outDir": "./dist"
-    },
-    // 컴파일에 포함될 파일 패턴
-    "include": [
-        "src/**/*",              // 소스 코드
-        "webpack.config.ts",     // 웹팩 설정
-        "postcss.config.ts",     // PostCSS 설정
-        "tailwind.config.ts"     // Tailwind 설정
+  "compilerOptions": {
+    // 컴파일된 JavaScript 버전 설정 (ES5)
+    "target": "es5",
+    // 모듈 시스템 설정 (Node.js의 ESM 지원)
+    "module": "NodeNext",
+    // 엄격한 타입 체크 활성화
+    "strict": true,
+    // CommonJS 모듈을 ES 모듈 방식으로 import 허용
+    "esModuleInterop": true,
+    // node_modules의 타입 체크 스킵으로 성능 향상
+    "skipLibCheck": true,
+    // 파일 이름의 대소문자 일관성 체크
+    "forceConsistentCasingInFileNames": true,
+    // React JSX 문법 지원
+    "jsx": "react",
+    // 모듈 해석 방식 설정 (Node.js의 ESM 방식)
+    "moduleResolution": "nodenext",
+    // 전역적으로 사용할 타입 정의
+    "types": [
+      "node", // Node.js 타입
+      "tailwindcss", // Tailwind CSS 타입
+      "chrome"
     ],
+    // JavaScript 파일 허용
+    "allowJs": true,
+    // JavaScript 파일 타입 체크 비활성화
+    "checkJs": false,
+    // 컴파일된 파일이 생성될 디렉토리
+    "outDir": "./dist"
+  },
+  // 컴파일에 포함될 파일 패턴
+  "include": [
+    "src/**/*", // 소스 코드
+    "webpack.config.ts", // 웹팩 설정
+    "postcss.config.ts", // PostCSS 설정
+    "tailwind.config.ts" // Tailwind 설정
+  ]
 }

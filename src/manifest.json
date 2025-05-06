@@ -4,13 +4,19 @@
     "version": "1.0",
     "description": "Post-it notes for your browser.",
     "permissions": [
-        "storage"
+        "storage",
+        "sidePanel",
+        "activeTab",
+        "scripting",
+        "tabs"
     ],
-    "action": {
-        "default_popup": "popup.html"
-    },
     "background": {
-        "service_worker": "background.js"
+        "service_worker": "background.js",
+        "type": "module"
+    },
+    "side_panel": {
+        "default_path": "sidePanel.html",
+        "default_title": "Simple Post-it"
     },
     "content_scripts": [
         {
