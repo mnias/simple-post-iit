@@ -2,10 +2,29 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import '../styles/global.css';
-import { savePostIt } from '../util/storage';
+import { getPostIts, savePostIt } from '../util/storage';
+import { PostItData } from '../types/post-it';
+import PostItList from './post-it-list';
 
 const Sidepanel = () => {
   const [text, setText] = React.useState('');
+  const [savedPostIts, setSavedPostIts] = React.useState<PostItData[]>([]);
+
+  const loadCurrentTabPostIts = async () => {
+    try {
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+
+      if (tab?.url) {
+        const postIts = await getPostIts(tab.url);
+        setSavedPostIts(postIts);
+      }
+    } catch (error) {
+      console.error('Error loading post-its:', error);
+    }
+  };
 
   const startDrag = async (e: React.DragEvent<HTMLButtonElement>) => {
     try {
@@ -40,12 +59,27 @@ const Sidepanel = () => {
 
         await savePostIt(message.postItData.url, postItData);
         console.log('Post-it saved:', postItData);
+
+        // 포스트잇 저장 후 목록 갱신
+        await loadCurrentTabPostIts();
       }
     };
 
     chrome.runtime.onMessage.addListener(messageListener);
     return () => chrome.runtime.onMessage.removeListener(messageListener);
   }, [text]);
+
+  // 컴포넌트 마운트 및 탭 변경 시 포스트잇 로드
+  React.useEffect(() => {
+    loadCurrentTabPostIts();
+
+    // 탭 변경 감지
+    chrome.tabs.onActivated.addListener(loadCurrentTabPostIts);
+
+    return () => {
+      chrome.tabs.onActivated.removeListener(loadCurrentTabPostIts);
+    };
+  }, []);
 
   return (
     <div className="flex flex-col p-4 gap-4">
@@ -58,10 +92,8 @@ const Sidepanel = () => {
         <button className="bg-blue-500 text-white p-2 rounded" draggable onDragStart={startDrag}>
           붙이기
         </button>
-        <button className="bg-blue-500 text-white p-2 rounded" onClick={() => setText('')}>
-          지우기
-        </button>
       </div>
+      <PostItList postIts={savedPostIts} />
     </div>
   );
 };

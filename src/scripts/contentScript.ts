@@ -4,6 +4,8 @@ import { getPostIts } from '../util/storage';
 import { createPostIt } from './create-postit';
 
 let isDraggable = false;
+let isInitialized = false; // 초기화 여부 체크
+
 console.log('Content script loaded');
 const restorePostIts = async () => {
   try {
@@ -20,27 +22,37 @@ const restorePostIts = async () => {
   }
 };
 
-document.body.addEventListener('dragover', (event) => {
-  event.preventDefault();
-  event.stopPropagation();
-});
+const initializeListeners = () => {
+  if (isInitialized) return; // 이미 초기화되었다면 중복 실행 방지
 
-document.body.addEventListener('drop', (event) => {
-  if (!isDraggable) return;
-  event.preventDefault();
-  event.stopPropagation();
-  createPostIt(event.pageX, event.pageY);
+  document.body.addEventListener('dragover', (event) => {
+    if (!isDraggable) return;
+    event.preventDefault();
+    event.stopPropagation();
+  });
 
-  document.body.removeAttribute('draggable');
-});
+  document.body.addEventListener('drop', (event) => {
+    if (!isDraggable) return;
+    event.preventDefault();
+    event.stopPropagation();
 
+    createPostIt(event.pageX, event.pageY);
+    isDraggable = false; // 드래그 상태 초기화
+    document.body.removeAttribute('draggable');
+  });
+
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'dragStart') {
+      isDraggable = true;
+      document.body.setAttribute('draggable', 'true');
+      sendResponse();
+      return true;
+    }
+  });
+
+  isInitialized = true; // 초기화 완료 표시
+};
+
+// 초기화 및 복원 실행
+initializeListeners();
 restorePostIts();
-
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === 'dragStart') {
-    document.body.setAttribute('draggable', 'true');
-    isDraggable = true;
-    sendResponse();
-    return true;
-  }
-});
